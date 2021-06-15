@@ -1,6 +1,9 @@
 import { Router } from "express";
 import profileModel from "../schema/profile.js";
 import createError from "http-errors";
+import multer from "multer";
+import {v2 as cloudinary} from "cloudinary";
+import {CloudinaryStorage} from "multer-storage-cloudinary";
 
 const profileRouter = Router();
 
@@ -48,8 +51,8 @@ profileRouter.post("/profile", async (req, res, next) => {
 		if (error.name === "ValidationError") {
 			const Error = {
 				message: error._message,
-				field: error.message
-			}
+				field: error.message,
+			};
 			res.send(Error);
 		} else if (error.name === "MongoError") {
 			const id = Object.keys(error.keyValue);
@@ -91,6 +94,11 @@ profileRouter.put("/profile/:id", async (req, res, next) => {
 profileRouter.delete("/profile/:id", async (req, res, next) => {
 	try {
 		const _id = req.params.id;
+		const getProfile = await findById(_id);
+		await cloudinary.uploader.destroy(
+			`${getProfile.image}`,
+			() => "IMG Deleted"
+		);
 		const request = await profileModel.findByIdAndDelete(_id);
 		if (request) {
 			const response = await { _id, Operation: "Deleted" };
@@ -100,6 +108,38 @@ profileRouter.delete("/profile/:id", async (req, res, next) => {
 		}
 	} catch (error) {
 		next(createError(404, `Profile with ${req.params.id} Id Not Found`));
+	}
+});
+
+const cloudinaryStorage = new CloudinaryStorage({
+	cloudinary,
+	params: {
+		folder: "Profile_Picture",
+	},
+});
+
+const upload = multer({storage: cloudinaryStorage}).single("profile");
+
+profileRouter.post("/profile/:id/picture", upload, async (req, res, next) => {
+	try {
+		const _id = req.params.id;
+		const request = await profileModel.findByIdAndUpdate(
+			_id,
+			{image: req.file.path},
+			{new: true}
+		);
+		if (request) {
+			const response = await {
+				_id: _id,
+				Link: req.file.path,
+				Operation: "image updated",
+			};
+			res.send(response);
+		} else {
+			next(createError(404, `Profile With ${_id} _id Not Found`));
+		}
+	} catch (error) {
+		next(createError(500, "Server is on Fire"));
 	}
 });
 
