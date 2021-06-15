@@ -1,4 +1,4 @@
-import {Router} from "express";
+import { Router } from "express";
 import profileModel from "../schema/profile.js";
 import createError from "http-errors";
 import multer from "multer";
@@ -77,14 +77,14 @@ profileRouter.put("/profile/:id", async (req, res, next) => {
 			new: true,
 		});
 		if (request) {
-			const response = await {_id, Operation: "updated"};
+			const response = await { _id, Operation: "updated" };
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
 		}
 	} catch (error) {
 		if (error.name === "ValidationError") {
-			next(createError(400, {error}));
+			next(createError(400, { error }));
 		} else {
 			next(createError(500, "Genric Internal Server Error"));
 		}
@@ -101,7 +101,7 @@ profileRouter.delete("/profile/:id", async (req, res, next) => {
 		);
 		const request = await profileModel.findByIdAndDelete(_id);
 		if (request) {
-			const response = await {_id, Operation: "Deleted"};
+			const response = await { _id, Operation: "Deleted" };
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
