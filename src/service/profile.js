@@ -1,5 +1,5 @@
 import {Router} from "express";
-import profileModel from "../../schema/profile.js";
+import profileModel from "../schema/profile.js";
 import createError from "http-errors";
 
 const profileRouter = Router();
