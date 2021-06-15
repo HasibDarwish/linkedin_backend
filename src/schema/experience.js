@@ -4,24 +4,23 @@ const { Schema, model } = mongoose;
 
 const experienceSchema = new Schema(
   {
-    name: {
+    role: {
       type: String,
       required: true,
     },
-    surname: {
+    company: {
       type: String,
       required: true,
     },
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    bio: {
+    startDate: {
       type: String,
       required: true,
     },
-    title: {
+    endDate: {
+      type: String,
+      default: null,
+    },
+    description: {
       type: String,
       required: true,
     },
@@ -29,15 +28,14 @@ const experienceSchema = new Schema(
       type: String,
       required: true,
     },
+    username: {
+      type: String,
+      required: true,
+    },
     image: {
       type: String,
       required: false,
       default: "https://source.unsplash.com/random",
-    },
-    username: {
-      type: String,
-      required: true,
-      unique: true,
     },
   },
   { timestamps: true }
