@@ -1,4 +1,4 @@
-import {Router} from "express";
+import { Router } from "express";
 import profileModel from "../schema/profile.js";
 import createError from "http-errors";
 
@@ -54,7 +54,7 @@ profileRouter.post("/profile", async (req, res, next) => {
 		} else if (error.name === "MongoError") {
 			const id = Object.keys(error.keyValue);
 			const Error = {
-				id:error.keyValue[id],
+				id: error.keyValue[id],
 				Code: error.code,
 				ErrorType: "Duplicating Value",
 				Advice: "Change Key Value",
@@ -74,14 +74,14 @@ profileRouter.put("/profile/:id", async (req, res, next) => {
 			new: true,
 		});
 		if (request) {
-			const response = await {_id, Operation: "updated"};
+			const response = await { _id, Operation: "updated" };
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
 		}
 	} catch (error) {
 		if (error.name === "ValidationError") {
-			next(createError(400, {error}));
+			next(createError(400, { error }));
 		} else {
 			next(createError(500, "Genric Internal Server Error"));
 		}
@@ -93,7 +93,7 @@ profileRouter.delete("/profile/:id", async (req, res, next) => {
 		const _id = req.params.id;
 		const request = await profileModel.findByIdAndDelete(_id);
 		if (request) {
-			const response = await {_id, Operation: "Deleted"};
+			const response = await { _id, Operation: "Deleted" };
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
