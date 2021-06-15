@@ -3,6 +3,7 @@ import listEndpoints from "express-list-endpoints";
 import mongoose from "mongoose";
 import cors from "cors";
 import profileRouter from "./service/profile.js";
+import PostRouter from "./service/post.js";
 import {
 	badRequestHandler,
 	unAuthorizedHandler,
@@ -12,12 +13,13 @@ import {
 } from "./errorHandler/index.js";
 
 const server = express();
-const {PORT, MONGO_CONNECTION_ATLAS} = process.env;
+const { PORT, MONGO_CONNECTION_ATLAS } = process.env;
 
 server.use(express.json());
 server.use(cors());
 
 server.use("/api", profileRouter);
+server.use("/api/posts", PostRouter);
 
 server.use(badRequestHandler);
 server.use(unAuthorizedHandler);
@@ -34,6 +36,6 @@ mongoose
 	.then(
 		server.listen(PORT, () => {
 			console.table(listEndpoints(server));
-			console.table({"Running At Port Number": PORT});
+			console.table({ "Running At Port Number": PORT });
 		})
 	);
