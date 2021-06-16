@@ -2,6 +2,9 @@ import { Router } from "express";
 import createError from "http-errors"
 import PostModel from "../schema/post.js";
 import ProfileModel from "../schema/profile.js";
+import multer from "multer"
+import { v2 as cloudinary } from "cloudinary"
+import { CloudinaryStorage } from "multer-storage-cloudinary"
 
 const PostRouter = Router()
 
@@ -29,6 +32,65 @@ PostRouter.post("/", async (req, res, next) => {
             next(createError(500, "An error occurred while saving the post "))
         }
 
+    }
+})
+
+// Posting images 
+
+const { CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET } = process.env
+cloudinary.config({
+    cloud_name: CLOUDINARY_NAME,
+    api_key: CLOUDINARY_KEY,
+    api_secret: CLOUDINARY_SECRET
+})
+
+
+// this comes from the library "multer-storage-cloudinary"
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: "Build_Week_3",
+        //     public_id: async (req, file) => {
+        // here i can choose a custom public_id 
+        //     }
+    }
+
+});
+
+
+// https://dev.to/itsmefarhan/cloudinary-files-images-crud-operations-with-nodejs-express-multer-2147
+
+
+PostRouter.post("/withImage", multer({ storage }).single("cover"), async (req, res, next) => {
+    try {
+
+        const user = await ProfileModel.findById(req.body.user)
+        if (user) {
+            const result = await cloudinary.uploader.upload(req.file.path);
+            console.log(result)
+
+            // let fileNameWithSlash = req.file.filename
+            // let indexOfSlash = fileNameWithSlash.indexOf("/")
+            // let fileNameWithoutSlash = fileNameWithSlash.slice(indexOfSlash + 1,)
+            let body = {
+                text: req.body.text,
+                user: req.body.user,
+                image: req.file.path,
+                cloudinaryId: result.public_id
+            }
+            const newPost = new PostModel(body)
+            const savedPost = await newPost.save()
+
+            res.status(201).send(savedPost)
+        }
+        else {
+            next(createError(404, `User with id: ${req.body.user} not found!`))
+        }
+
+
+    } catch (error) {
+        console.log(error);
+        next(createError(500, "An error occurred while posting with image "))
     }
 })
 
@@ -89,15 +151,23 @@ PostRouter.put("/:postId", async (req, res, next) => {
 
 PostRouter.delete("/:postId", async (req, res, next) => {
     try {
-        const post = await PostModel.findByIdAndDelete(req.params.postId)
+        const post = await PostModel.findById(req.params.postId)
 
         if (post) {
+            // console.log(post + "  this is the Post");
+            if (post.cloudinaryId) {
+                console.log(post.cloudinaryId + "    this is the cloudinary id");
+                await cloudinary.uploader.destroy(post.cloudinaryId
+                    , function (result) { console.log(result) });
+
+            } await PostModel.findByIdAndDelete(req.params.postId)
             res.status(204).send()
+
         } else {
             next(createError(404, `post with id: ${req.params.postId} not found!`))
         }
     } catch (error) {
-
+        console.log(error);
         next(createError(500, "An error occurred while deleting the post"))
     }
 })
