@@ -1,41 +1,45 @@
-import { Router } from "express";
+import {Router} from "express";
 import profileModel from "../schema/profile.js";
 import createError from "http-errors";
 import multer from "multer";
 import {v2 as cloudinary} from "cloudinary";
 import {CloudinaryStorage} from "multer-storage-cloudinary";
+import {convertToCsv} from "../helper/json2csv.js";
+import {convertUrlToBase64Image} from "../helper/base64Image.js";
+import {createPDf} from "../library/pdf.js";
+import {pipeline} from "stream";
 
 const profileRouter = Router();
 
 profileRouter.get("/profile", async (req, res, next) => {
-  try {
-    const request = await profileModel.find();
-    if (request && request.length > 0) {
-      res.send(request);
-    } else {
-      next(createError(404, "Not Found"));
-    }
-  } catch (error) {
-    next(createError(400, "Bad Request"));
-  }
+	try {
+		const request = await profileModel.find();
+		if (request && request.length > 0) {
+			res.send(request);
+		} else {
+			next(createError(404, "Not Found"));
+		}
+	} catch (error) {
+		next(createError(400, "Bad Request"));
+	}
 });
 
 profileRouter.get("/profile/:id", async (req, res, next) => {
-  try {
-    const _id = req.params.id;
-    const request = await profileModel.findById(_id);
-    if (request) {
-      res.send(request);
-    } else {
-      next(createError(404, `Profile with ${req.params.id} Id Not Found`));
-    }
-  } catch (error) {
-    if (error.name === "CastError") {
-      next(createError(404, `Profile with ${req.params.id} Id Not Found`));
-    } else {
-      next(createError(400, "Bad Request"));
-    }
-  }
+	try {
+		const _id = req.params.id;
+		const request = await profileModel.findById(_id);
+		if (request) {
+			res.send(request);
+		} else {
+			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
+		}
+	} catch (error) {
+		if (error.name === "CastError") {
+			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
+		} else {
+			next(createError(400, "Bad Request"));
+		}
+	}
 });
 
 profileRouter.post("/profile", async (req, res, next) => {
@@ -77,14 +81,14 @@ profileRouter.put("/profile/:id", async (req, res, next) => {
 			new: true,
 		});
 		if (request) {
-			const response = await { _id, Operation: "updated" };
+			const response = await {_id, Operation: "updated"};
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
 		}
 	} catch (error) {
 		if (error.name === "ValidationError") {
-			next(createError(400, { error }));
+			next(createError(400, {error}));
 		} else {
 			next(createError(500, "Genric Internal Server Error"));
 		}
@@ -101,7 +105,7 @@ profileRouter.delete("/profile/:id", async (req, res, next) => {
 		);
 		const request = await profileModel.findByIdAndDelete(_id);
 		if (request) {
-			const response = await { _id, Operation: "Deleted" };
+			const response = await {_id, Operation: "Deleted"};
 			res.send(response);
 		} else {
 			next(createError(404, `Profile with ${req.params.id} Id Not Found`));
@@ -135,6 +139,30 @@ profileRouter.post("/profile/:id/picture", upload, async (req, res, next) => {
 				Operation: "image updated",
 			};
 			res.send(response);
+		} else {
+			next(createError(404, `Profile With ${_id} _id Not Found`));
+		}
+	} catch (error) {
+		next(createError(500, "Server is on Fire"));
+	}
+});
+
+profileRouter.get("/profile/:id/csv", async (req, res, next) => {
+	try {
+		const _id = req.params.id;
+		const request = await profileModel.findById(_id);
+		if (request) {
+			const csv = convertToCsv(request);
+			const img = await convertUrlToBase64Image(request.image);
+			const source = createPDf(img, request.name, csv);
+			const destination = res
+			res.setHeader(
+				"Content-Type", "application/pdf",
+				"Content-Disposition",
+				`attachment;filename=${request.name}details.pdf`
+			)
+
+			pipeline(source, destination, (error) => console.log(error))
 		} else {
 			next(createError(404, `Profile With ${_id} _id Not Found`));
 		}
