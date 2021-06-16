@@ -6,11 +6,11 @@ import profileRouter from "./service/profile.js";
 import experienceRouter from "./service/experience.js";
 import PostRouter from "./service/post.js";
 import {
-  badRequestHandler,
-  unAuthorizedHandler,
-  forBiddenHandler,
-  notFoundHandler,
-  catchAllHandler,
+	badRequestHandler,
+	unAuthorizedHandler,
+	forBiddenHandler,
+	notFoundHandler,
+	catchAllHandler,
 } from "./errorHandler/index.js";
 
 const server = express();
