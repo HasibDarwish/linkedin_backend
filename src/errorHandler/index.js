@@ -47,5 +47,5 @@ export const notFoundHandler = function (error, req, res, next) {
 };
 
 export const catchAllHandler = function (error, req, res, next) {
-	if (error.status === 500 || error.status !== 500) res.send("Server on fire!");
+	if (error.status === 500 || error.status !== 500) res.status(500).send("Server on fire!");
 };
