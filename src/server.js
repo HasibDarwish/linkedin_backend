@@ -10,11 +10,11 @@ import AuthorizeUser from './authentication/authorization.js'
 import {trackEndpoints} from "./log/index.js";
  
 import {
-  badRequestHandler,
-  unAuthorizedHandler,
-  forBiddenHandler,
-  notFoundHandler,
-  catchAllHandler,
+	badRequestHandler,
+	unAuthorizedHandler,
+	forBiddenHandler,
+	notFoundHandler,
+	catchAllHandler,
 } from "./errorHandler/index.js";
 
 const server = express();
