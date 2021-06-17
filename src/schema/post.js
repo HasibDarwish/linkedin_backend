@@ -18,8 +18,12 @@ const postSchema = new Schema(
         image: {
             type: String,
             required: false,
-
+            default: "no image uploaded yet :/"
         },
+        cloudinaryId: {
+            type: String,
+            required: false
+        }
     },
     { timestamps: true }
 );

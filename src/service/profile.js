@@ -147,27 +147,37 @@ profileRouter.post("/profile/:id/picture", upload, async (req, res, next) => {
 	}
 });
 
-profileRouter.get("/profile/:id/csv", async (req, res, next) => {
+profileRouter.get("/profile/:id/cv", async (req, res, next) => {
 	try {
 		const _id = req.params.id;
 		const request = await profileModel.findById(_id);
 		if (request) {
 			const csv = convertToCsv(request);
 			const img = await convertUrlToBase64Image(request.image);
-			const source = createPDf(img, request.name, csv);
-			const destination = res
+			const source = createPDf(img, request, csv);
+			const destination = res;
 			res.setHeader(
-				"Content-Type", "application/pdf",
+				"Content-Type",
+				"application/pdf",
 				"Content-Disposition",
 				`attachment;filename=${request.name}details.pdf`
-			)
+			);
 
-			pipeline(source, destination, (error) => console.log(error))
+			pipeline(source, destination, (error) => console.log(error));
 		} else {
 			next(createError(404, `Profile With ${_id} _id Not Found`));
 		}
 	} catch (error) {
 		next(createError(500, "Server is on Fire"));
+	}
+});
+
+profileRouter.get("/cloud", upload, async (req, res, next) => {
+	try {
+		const request = await cloudinary.uploader.upload(req.file.path);
+		res.send(request);
+	} catch (error) {
+		console.log(error);
 	}
 });
 

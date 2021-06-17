@@ -5,20 +5,30 @@ import cors from "cors";
 import profileRouter from "./service/profile.js";
 import experienceRouter from "./service/experience.js";
 import PostRouter from "./service/post.js";
+import tokenRouter from './authentication/index.js'
+import AuthorizeUser from './authentication/authorization.js'
+import {trackEndpoints} from "./log/index.js";
+ 
 import {
-  badRequestHandler,
-  unAuthorizedHandler,
-  forBiddenHandler,
-  notFoundHandler,
-  catchAllHandler,
+	badRequestHandler,
+	unAuthorizedHandler,
+	forBiddenHandler,
+	notFoundHandler,
+	catchAllHandler,
 } from "./errorHandler/index.js";
 
 const server = express();
 const { PORT, MONGO_CONNECTION_ATLAS } = process.env;
 
+
+server.use(trackEndpoints);
+
 server.use(express.json());
 server.use(cors());
 
+server.use("/api", tokenRouter);
+
+server.use(AuthorizeUser);
 server.use("/api", profileRouter);
 server.use("/api", experienceRouter);
 server.use("/api/posts", PostRouter);
@@ -31,6 +41,7 @@ server.use(catchAllHandler);
 
 mongoose
 	.connect(MONGO_CONNECTION_ATLAS, {
+		useCreateIndex:true,
 		useNewUrlParser: true,
 		useUnifiedTopology: true,
 		useFindAndModify: false,
