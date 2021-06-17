@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 import { commentSchema } from "./comments.js";
+import { likeSchema } from "./like.js";
 
 const postSchema = new Schema(
     {
@@ -30,6 +31,13 @@ const postSchema = new Schema(
                 required: false,
             },
         ],
+        likes: [
+            {
+                type: likeSchema,
+                required: false,
+                unique: true
+            }
+        ]
     },
     { timestamps: true }
 );
