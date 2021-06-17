@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import experienceModel from "./experience.js";
 
-const {Schema, model} = mongoose;
+const { Schema, model } = mongoose;
 
 const experienceSchema = new Schema(
 	{
@@ -35,7 +35,7 @@ const experienceSchema = new Schema(
 			default: "https://source.unsplash.com/random",
 		},
 	},
-	{timestamps: true}
+	{ timestamps: true }
 );
 
 const profileSchema = new Schema(
@@ -82,7 +82,7 @@ const profileSchema = new Schema(
 			},
 		],
 	},
-	{timestamps: true}
+	{ timestamps: true }
 );
 
 export default model("Profile", profileSchema);
