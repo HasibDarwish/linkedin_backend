@@ -54,6 +54,7 @@ const storage = new CloudinaryStorage({
         //     public_id: async (req, file) => {
         // here i can choose a custom public_id 
         //     }
+        use_filename: true
     }
 
 });
@@ -156,10 +157,11 @@ PostRouter.delete("/:postId", async (req, res, next) => {
             // console.log(post + "  this is the Post");
             if (post.cloudinaryId) {
                 console.log(post.cloudinaryId + "    this is the cloudinary id");
-                await cloudinary.uploader.destroy(post.cloudinaryId
+                await cloudinary.uploader.destroy(post.cloudinaryId, { invalidate: true }
                     , function (result) { console.log(result) });
                 // this just doesnt work somehow 
-            } await PostModel.findByIdAndDelete(req.params.postId)
+            }
+            await PostModel.findByIdAndDelete(req.params.postId)
             res.status(204).send()
 
         } else {
@@ -170,110 +172,6 @@ PostRouter.delete("/:postId", async (req, res, next) => {
         next(createError(500, "An error occurred while deleting the post"))
     }
 })
-
-//~~~~~~~~~~~~~~~~~~~~~~~ COMMENTS SECTION~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// gets all comments for a specific postId
-PostRouter.get("/:postId/comment", async (req, res, next) => {
-    try {
-        const id = req.params.postId
-        const post = await PostModel.findById(id)
-        if (post) {
-            res.send(post.comments ? post.comments : "there are no comments yet :D")
-        } else {
-            next(createError(404, `post with id: ${req.params.postId} not found!`))
-        }
-
-    } catch (error) {
-        console.log(error)
-        next(createError(500, `An error occurred while getting the comments for the  post with id ${req.params.postId}`))
-    }
-})
-// posts a comment for a specific postId
-PostRouter.post("/:postId/comment", async (req, res, next) => {
-    try {
-        const id = req.params.postId
-        const post = await PostModel.findById(id)
-        if (post) {
-            const postWithComment = await PostModel.findByIdAndUpdate(
-                req.params.postId,
-                {
-                    $push: { comments: req.body }
-                },
-                {
-                    runValidators: true, new: true
-                }
-            )
-            res.send(postWithComment)
-        } else {
-            next(createError(404, `post with id: ${req.params.postId} not found!`))
-        }
-
-    } catch (error) {
-        console.log(error)
-        next(createError(500, `An error occurred while posting the comment for the  post with id ${req.params.postId}`))
-    }
-})
-
-PostRouter.delete("/:postId/comment/:commentId", async (req, res, next) => {
-    try {
-        const post = await PostModel.findById(req.params.postId)
-        if (post) {
-            const comment = post.comments.filter(comment => comment._id == req.params.commentId)[0]
-            if (comment) {
-                await PostModel.findByIdAndUpdate(
-                    req.params.postId,
-                    {
-                        $pull: {
-                            comments: { _id: req.params.commentId }
-                        }
-                    },
-                    {
-                        new: true
-                    }
-                )
-                res.status(201).send(`comment with id:${req.params.commentId} is successfully deleted!!`)
-            } else {
-                next(createError(404, `comment with id: ${req.params.commentId} not found!`))
-            }
-        } else {
-            next(createError(404, `post with id: ${req.params.postId} not found!`))
-        }
-    } catch (error) {
-        console.log(error)
-        next(createError(500, `An error occurred while deleting the comment ${req.params.commentId} for the  post  ${req.params.postId}`))
-    }
-})
-
-PostRouter.put("/:postId/comment/:commentId", async (req, res, next) => {
-    try {
-        const post = await PostModel.findById(req.params.postId)
-        if (post) {
-            const comment = post.comments.filter(comment => comment._id == req.params.commentId)[0]
-            if (comment) {
-                const updatedPost = await PostModel.findOneAndUpdate(
-                    { _id: req.params.postId, "comments._id": req.params.commentId },
-                    {
-                        $set: { "comments.$.text": req.body.text }
-                    }
-                    , {
-                        runValidators: true,
-                        new: true
-                    }
-                )
-
-                res.status(201).send(updatedPost.comments)
-            } else {
-                next(createError(404, `comment with id: ${req.params.commentId} not found!`))
-            }
-        } else {
-            next(createError(404, `post with id: ${req.params.postId} not found!`))
-        }
-    } catch (error) {
-        console.log(error)
-        next(createError(500, `An error occurred while deleting the comment ${req.params.commentId} for the  post  ${req.params.postId}`))
-    }
-})
-
 
 
 export default PostRouter
