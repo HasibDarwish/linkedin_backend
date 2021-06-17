@@ -4,7 +4,6 @@ import createError from "http-errors";
 import multer from "multer";
 import {v2 as cloudinary} from "cloudinary";
 import {CloudinaryStorage} from "multer-storage-cloudinary";
-import {convertToCsv} from "../helper/json2csv.js";
 import {convertUrlToBase64Image} from "../helper/base64Image.js";
 import {createPDf} from "../library/pdf.js";
 import {pipeline} from "stream";
@@ -143,6 +142,7 @@ profileRouter.post("/profile/:id/picture", upload, async (req, res, next) => {
 			next(createError(404, `Profile With ${_id} _id Not Found`));
 		}
 	} catch (error) {
+		console.log(error);
 		next(createError(500, "Server is on Fire"));
 	}
 });
@@ -152,9 +152,8 @@ profileRouter.get("/profile/:id/cv", async (req, res, next) => {
 		const _id = req.params.id;
 		const request = await profileModel.findById(_id);
 		if (request) {
-			const csv = convertToCsv(request);
 			const img = await convertUrlToBase64Image(request.image);
-			const source = createPDf(img, request, csv);
+			const source = createPDf(img, request);
 			const destination = res;
 			res.setHeader(
 				"Content-Type",
@@ -169,15 +168,6 @@ profileRouter.get("/profile/:id/cv", async (req, res, next) => {
 		}
 	} catch (error) {
 		next(createError(500, "Server is on Fire"));
-	}
-});
-
-profileRouter.get("/cloud", upload, async (req, res, next) => {
-	try {
-		const request = await cloudinary.uploader.upload(req.file.path);
-		res.send(request);
-	} catch (error) {
-		console.log(error);
 	}
 });
 

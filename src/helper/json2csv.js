@@ -1,8 +1,7 @@
-import {Parser} from "json2csv";
+import { Parser, Transform } from "json2csv";
 
 export const convertToCsv = (request) => {
-	const profile = request.toObject();
-	const fields = Object.keys(profile);
-	const parser = new Parser(fields);
-	return parser.parse(profile);
+  const requestToObject = request.toObject();
+  const parser = new Parser();
+  return parser.parse(requestToObject);
 };

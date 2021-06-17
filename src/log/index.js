@@ -2,8 +2,8 @@ import logModel from "../schema/log.js";
 import tokenModel from "../schema/token.js";
 
 export const trackEndpoints = async (req, res, next) => {
-	const info = await tokenModel.findOne({token: req.headers.token});
 	const token = req.headers.token;
+	const info = await tokenModel.findOne({token: token});
 	const client = {
 		TOKEN: token ? token : "Anonymous@Unauthorized@Access",
 		EMAIL: info ? info.email : "Anonymous@UnauthorizedAccess.com",

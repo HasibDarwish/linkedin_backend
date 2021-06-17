@@ -24,7 +24,6 @@ import {
 const server = express();
 const { PORT, MONGO_CONNECTION_ATLAS } = process.env;
 
-
 server.use(trackEndpoints);
 
 server.use(express.json());
