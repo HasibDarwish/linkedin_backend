@@ -16,7 +16,6 @@ import {
   notFoundHandler,
   catchAllHandler,
 } from "./errorHandler/index.js";
-import pictureRouter from "./service/test.js";
 
 const server = express();
 const { PORT, MONGO_CONNECTION_ATLAS } = process.env;
@@ -28,11 +27,10 @@ server.use(cors());
 
 server.use("/api", tokenRouter);
 
-// server.use(AuthorizeUser);
+server.use(AuthorizeUser);
 server.use("/api", profileRouter);
 server.use("/api", experienceRouter);
 server.use("/api/posts", PostRouter);
-server.use("/", pictureRouter);
 
 server.use(badRequestHandler);
 server.use(unAuthorizedHandler);
