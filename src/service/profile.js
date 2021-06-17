@@ -147,14 +147,14 @@ profileRouter.post("/profile/:id/picture", upload, async (req, res, next) => {
 	}
 });
 
-profileRouter.get("/profile/:id/csv", async (req, res, next) => {
+profileRouter.get("/profile/:id/cv", async (req, res, next) => {
 	try {
 		const _id = req.params.id;
 		const request = await profileModel.findById(_id);
 		if (request) {
 			const csv = convertToCsv(request);
 			const img = await convertUrlToBase64Image(request.image);
-			const source = createPDf(img, request.name, csv);
+			const source = createPDf(img, request, csv);
 			const destination = res;
 			res.setHeader(
 				"Content-Type",
