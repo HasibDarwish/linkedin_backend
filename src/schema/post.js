@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-
 const { Schema, model } = mongoose;
+import { commentSchema } from "./comments.js";
 
 const postSchema = new Schema(
     {
@@ -23,7 +23,13 @@ const postSchema = new Schema(
         cloudinaryId: {
             type: String,
             required: false
-        }
+        },
+        comments: [
+            {
+                type: commentSchema,
+                required: false,
+            },
+        ],
     },
     { timestamps: true }
 );
