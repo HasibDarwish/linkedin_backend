@@ -66,17 +66,15 @@ PostRouter.post("/withImage", multer({ storage }).single("cover"), async (req, r
 
         const user = await ProfileModel.findById(req.body.user)
         if (user) {
-            const result = await cloudinary.uploader.upload(req.file.path);
-            console.log(result)
 
-            // let fileNameWithSlash = req.file.filename
-            // let indexOfSlash = fileNameWithSlash.indexOf("/")
-            // let fileNameWithoutSlash = fileNameWithSlash.slice(indexOfSlash + 1,)
+            let fileNameWithSlash = req.file.filename
+            let indexOfSlash = fileNameWithSlash.indexOf("/")
+            let fileNameWithoutSlash = fileNameWithSlash.slice(indexOfSlash + 1,)
             let body = {
                 text: req.body.text,
                 user: req.body.user,
                 image: req.file.path,
-                cloudinaryId: result.public_id
+                cloudinaryId: fileNameWithoutSlash
             }
             const newPost = new PostModel(body)
             const savedPost = await newPost.save()
@@ -159,7 +157,7 @@ PostRouter.delete("/:postId", async (req, res, next) => {
                 console.log(post.cloudinaryId + "    this is the cloudinary id");
                 await cloudinary.uploader.destroy(post.cloudinaryId
                     , function (result) { console.log(result) });
-
+                // this just doesnt work somehow 
             } await PostModel.findByIdAndDelete(req.params.postId)
             res.status(204).send()
 
