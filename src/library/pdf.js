@@ -12,18 +12,6 @@ export const createPDf = (img,heading, body) => {
 
 	const dd = {
 		content: [
-			// {
-			// 	image: img,
-			// 	alignment: "center",
-			// 	fit: [500, 600],
-			// },
-
-			// {
-			// 	text: body,
-			// 	fontSize: 16,
-			// 	color: "dodgerblue",
-			// 	margin: [10, -15],
-			// },
 			{
 				text: "Personal Information\n".toUpperCase(),
 				color: "orangered",
