@@ -1,8 +1,14 @@
 import { Router } from "express";
 import createError from "http-errors";
+import multer from "multer";
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { convertToCsv } from "../helper/json2csv.js";
+import { pipeline } from "stream";
 
 import experienceModel from "../schema/experience.js";
 import profileModel from "../schema/profile.js";
+import experience from "../schema/experience.js";
 
 const experienceRouter = Router();
 
@@ -45,6 +51,46 @@ experienceRouter.get(
           : res.status(404).send("exp not found")
         : res.status(404).send("profile not here");
     } catch (error) {
+      next(error);
+    }
+  }
+);
+
+experienceRouter.get(
+  "/profile/:userName/experiences/csv",
+  async (req, res, next) => {
+    try {
+      const isProfile = await profileModel.findOne({
+        username: req.params.userName,
+      });
+      //   console.log(isProfile);
+      if (isProfile) {
+        const { experiences } = isProfile;
+
+        // const csv = experiences.map((exp) => convertToCsv(exp));
+        const csv = convertToCsv(experiences);
+        // console.log(csv);
+
+        const source = csv;
+        const destination = res;
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename=${req.params.userName}-experiences-export.csv`
+        );
+
+        pipeline(source, destination, (error) =>
+          error ? console.log(error) : ""
+        );
+      } else {
+        next(
+          createError(
+            404,
+            `Experience with ID: ${req.params.expId} is not found`
+          )
+        );
+      }
+    } catch (error) {
+      // console.log(error);
       next(error);
     }
   }
@@ -117,7 +163,7 @@ experienceRouter.delete(
         username: req.params.userName,
         "experiences._id": req.params.expId,
       });
-      console.log(isProfile);
+      //   console.log(isProfile);
 
       if (isProfile) {
         const profile = await profileModel.findOneAndUpdate(
@@ -139,6 +185,44 @@ experienceRouter.delete(
         );
       }
     } catch (error) {
+      next(error);
+    }
+  }
+);
+
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "experiences",
+  },
+});
+
+const upload = multer({ storage: cloudinaryStorage }).single("picture");
+
+experienceRouter.post(
+  "/profile/:userName/experiences/:expId/picture",
+  upload,
+  async (req, res, next) => {
+    try {
+      const isProfile = await profileModel.findOne({
+        username: req.params.userName,
+        "experiences._id": req.params.expId,
+      });
+      if (isProfile) {
+        const { experiences } = isProfile;
+        console.log(experiences);
+        let oldExp = experiences.find(
+          (exp) => exp._id.toString() === req.params.expId
+        );
+        const newObject = oldExp.toObject();
+        const newExp = { ...newObject, image: req.file.path };
+        res.send(newExp.image);
+      } else {
+        const error = new Error("No Profile");
+        next(error);
+      }
+    } catch (error) {
+      console.log(error);
       next(error);
     }
   }
